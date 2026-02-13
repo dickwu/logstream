@@ -33,26 +33,35 @@ Real-time multi-project log collector with full-text search, tracing, and AI int
 
 ## Quick Start
 
-### 1. Start Meilisearch
+### 1. Install Meilisearch
 
 ```bash
-docker compose up -d
+# macOS
+brew install meilisearch
+
+# Linux (see https://www.meilisearch.com/docs/learn/getting_started/installation)
+curl -L https://install.meilisearch.com | sh
 ```
 
-### 2. Initialize the index
+### 2. Start Meilisearch
 
 ```bash
-# Build the server
+meilisearch --master-key "your-master-key" --env development
+```
+
+### 3. Build & initialize
+
+```bash
 cargo build --release
 
 # Initialize Meilisearch index with correct settings
-MEILI_KEY=dev-master-key ./target/release/logstream init
+MEILI_KEY=your-master-key ./target/release/logstream init
 ```
 
-### 3. Start the collector
+### 4. Start the collector
 
 ```bash
-MEILI_KEY=dev-master-key ./target/release/logstream serve
+MEILI_KEY=your-master-key ./target/release/logstream serve
 ```
 
 The server starts on `:4800` with these endpoints:
@@ -335,8 +344,6 @@ logstream/
 │   ├── log-mcp-server.ts # MCP server for AI integration
 │   └── package.json
 ├── Cargo.toml
-├── Dockerfile
-├── docker-compose.yml    # Meilisearch
 └── README.md
 ```
 

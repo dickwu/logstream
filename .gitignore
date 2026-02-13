@@ -24,3 +24,4 @@ meili_data/
 # OS
 .DS_Store
 Thumbs.db
+.meili_data
