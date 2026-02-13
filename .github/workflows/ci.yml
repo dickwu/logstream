@@ -21,18 +21,14 @@ jobs:
         with:
           shared-key: "logstream"
       
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
+      - name: Install bun
+        uses: oven-sh/setup-bun@v1
+        
       - name: Build dashboard
         run: |
           cd dashboard
-          npm install
-          npm run build
-        env:
-          CI: true
+          bun install
+          bun run build
           
       - name: Build server
         run: cargo build --release
