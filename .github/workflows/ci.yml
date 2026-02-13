@@ -21,14 +21,19 @@ jobs:
         with:
           shared-key: "logstream"
       
-      - name: Install bun
-        uses: oven-sh/setup-bun@v1
-        
-      - name: Build dashboard
+      - name: Download dashboard
+        uses: dawidd6/action-download-release@v1
+        with:
+          owner: dickwu
+          repo: logstream-dashboard
+          pattern: dashboard
+          file: dashboard.zip
+          dest: dashboard-temp
+          
+      - name: Extract dashboard
         run: |
-          cd dashboard
-          bun install
-          bun run build
+          mkdir -p dashboard
+          unzip -o dashboard-temp/dashboard.zip -d dashboard
           
       - name: Build server
         run: cargo build --release
