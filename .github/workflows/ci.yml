@@ -1,0 +1,46 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "logstream"
+          
+      - name: Build
+        run: cargo build --release
+        
+      - name: Run tests
+        run: cargo test
+        
+  cli:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Build CLI
+        run: cargo build --release --features cli
+        
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: logstream-cli
+          path: target/release/logstream-cli
