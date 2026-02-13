@@ -4,6 +4,7 @@ use axum::routing::{get, post};
 use axum::Router;
 use meilisearch_sdk::client::Client;
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::services::ServeDir;
 
 use crate::config::Config;
 use crate::meili::MeiliBatcher;
@@ -43,6 +44,8 @@ pub async fn run(cfg: Config) -> anyhow::Result<()> {
         .route("/trace/{trace_id}", get(routes::trace))
         .route("/errors", get(routes::errors))
         .route("/ws", get(routes::ws_handler))
+        .nest_service("/dashboard", ServeDir::new("dashboard"))
+        .route("/", get(axum::response::Redirect::to("/dashboard")))
         .layer(cors)
         .with_state(state);
 
