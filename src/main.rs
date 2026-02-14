@@ -2,6 +2,7 @@ mod collector;
 mod config;
 mod meili;
 mod models;
+mod mcp;
 mod routes;
 mod subscribers;
 
@@ -30,6 +31,10 @@ enum Commands {
         /// Meilisearch API key
         #[arg(long, env = "MEILI_KEY", default_value = "")]
         meili_key: String,
+
+        /// Start MCP server for AI integration
+        #[arg(long, default_value = "false")]
+        with_mcp: bool,
     },
 
     /// Initialize Meilisearch index with proper settings
@@ -57,12 +62,29 @@ async fn main() -> anyhow::Result<()> {
             port,
             meili_host,
             meili_key,
+            with_mcp,
         } => {
             let cfg = config::Config {
                 port,
-                meili_host,
-                meili_key,
+                meili_host: meili_host.clone(),
+                meili_key: meili_key.clone(),
+                with_mcp,
             };
+            
+            // Start MCP server if requested
+            if with_mcp {
+                let mcp_cfg = mcp::McpConfig {
+                    meili_host,
+                    meili_key,
+                };
+                tokio::spawn(async move {
+                    if let Err(e) = mcp::run_mcp_server(mcp_cfg).await {
+                        tracing::error!("MCP server error: {}", e);
+                    }
+                });
+                tracing::info!("MCP server will start on stdio");
+            }
+            
             collector::run(cfg).await?;
         }
         Commands::Init {
