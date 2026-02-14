@@ -59,6 +59,7 @@ pub async fn search(
         params.project.as_deref(),
         params.level.as_deref(),
         params.trace_id.as_deref(),
+        params.request_id.as_deref(),
         params.environment.as_deref(),
         params.since.as_deref(),
     );
@@ -154,6 +155,48 @@ pub async fn trace(
 
             let response = json!({
                 "traceId": trace_id,
+                "eventCount": hits.len(),
+                "projects": projects,
+                "timeline": hits,
+            });
+            Json(response).into_response()
+        }
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": format!("{}", e) })),
+        )
+            .into_response(),
+    }
+}
+
+// ────────────────────────────────────────────
+// GET /request/:request_id — full request timeline
+// ────────────────────────────────────────────
+
+pub async fn request(
+    State(state): State<Arc<AppState>>,
+    axum::extract::Path(request_id): axum::extract::Path<String>,
+) -> impl IntoResponse {
+    let index = state.meili_client.index(meili::INDEX_NAME);
+
+    let filter = format!("requestId = \"{}\"", request_id);
+
+    let mut search_query = index.search();
+    search_query.with_query("");
+    search_query.with_filter(&filter);
+    search_query.with_sort(&["timestamp:asc"]);
+    search_query.with_limit(500);
+
+    match search_query.execute::<serde_json::Value>().await {
+        Ok(results) => {
+            let hits: Vec<&serde_json::Value> = results.hits.iter().map(|h| &h.result).collect();
+            let projects: std::collections::HashSet<String> = hits
+                .iter()
+                .filter_map(|h| h.get("project").and_then(|p| p.as_str()).map(String::from))
+                .collect();
+
+            let response = json!({
+                "requestId": request_id,
                 "eventCount": hits.len(),
                 "projects": projects,
                 "timeline": hits,

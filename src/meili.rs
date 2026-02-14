@@ -30,6 +30,7 @@ pub async fn init_index(host: &str, key: &str) -> anyhow::Result<()> {
             "project",
             "level",
             "traceId",
+            "requestId",
             "spanId",
             "parentSpanId",
             "environment",
@@ -148,6 +149,7 @@ pub fn build_filter(
     project: Option<&str>,
     level: Option<&str>,
     trace_id: Option<&str>,
+    request_id: Option<&str>,
     environment: Option<&str>,
     since: Option<&str>,
 ) -> Option<String> {
@@ -161,6 +163,9 @@ pub fn build_filter(
     }
     if let Some(t) = trace_id {
         clauses.push(format!("traceId = \"{}\"", t));
+    }
+    if let Some(r) = request_id {
+        clauses.push(format!("requestId = \"{}\"", r));
     }
     if let Some(e) = environment {
         clauses.push(format!("environment = \"{}\"", e));

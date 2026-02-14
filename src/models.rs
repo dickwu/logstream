@@ -29,12 +29,19 @@ pub struct LogEntry {
     #[serde(default)]
     pub message: String,
 
-    // --- Tracing ---
-    /// Correlation ID across services
+    // --- Request Tracking ---
+    /// Request ID for full request tracking across services
+    /// Generated if not provided - can be used to track a request from start to end
+    /// across multiple services (e.g., frontend → API → database)
+    #[serde(default = "generate_uuid")]
+    pub request_id: String,
+
+    // --- Tracing (OpenTelemetry-style) ---
+    /// Trace ID for distributed tracing correlation
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trace_id: Option<String>,
 
-    /// Specific operation ID
+    /// Specific operation ID (span)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub span_id: Option<String>,
 
@@ -43,7 +50,7 @@ pub struct LogEntry {
     pub parent_span_id: Option<String>,
 
     // --- Context ---
-    /// Arbitrary metadata (serialized as JSON string for Meili search)
+    /// Arbitrary metadata
     #[serde(skip_serializing_if = "Option::is_none")]
     pub meta: Option<serde_json::Value>,
 
@@ -124,6 +131,7 @@ pub struct SearchParams {
     pub project: Option<String>,
     pub level: Option<String>,
     pub trace_id: Option<String>,
+    pub request_id: Option<String>,
     pub environment: Option<String>,
     pub since: Option<String>,
     pub limit: Option<usize>,
@@ -133,6 +141,10 @@ pub struct SearchParams {
 
 fn generate_id() -> String {
     ulid::Ulid::new().to_string()
+}
+
+fn generate_uuid() -> String {
+    uuid::Uuid::new_v4().to_string()
 }
 
 fn now() -> String {

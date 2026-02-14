@@ -42,6 +42,7 @@ pub async fn run(cfg: Config) -> anyhow::Result<()> {
         .route("/search", get(routes::search))
         .route("/projects", get(routes::projects))
         .route("/trace/{trace_id}", get(routes::trace))
+        .route("/request/{request_id}", get(routes::request))
         .route("/errors", get(routes::errors))
         .route("/ws", get(routes::ws_handler))
         .nest_service("/dashboard", ServeDir::new("dashboard"))
@@ -62,6 +63,7 @@ pub async fn run(cfg: Config) -> anyhow::Result<()> {
     tracing::info!("    GET  /search        — Query logs");
     tracing::info!("    GET  /projects      — Project breakdown");
     tracing::info!("    GET  /trace/:id     — Trace timeline");
+    tracing::info!("    GET  /request/:id   — Request timeline");
     tracing::info!("    GET  /errors        — Error summary");
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
