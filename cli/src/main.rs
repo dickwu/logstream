@@ -137,7 +137,7 @@ async fn tail(
     println!("Connecting to {}...", url);
 
     let (ws, _) = connect_async(&url).await?;
-    let (mut write, mut read) = ws.split();
+    let (_write, mut read) = ws.split();
 
     println!("Connected! Streaming logs...\n");
 
@@ -147,7 +147,7 @@ async fn tail(
                 if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
                     if let Some(data) = v.get("data") {
                         print_log(data);
-                    } else if let Some(connected) = v.get("type").and_then(|t| t.as_str()) {
+                    } else if let Some(_connected) = v.get("type").and_then(|t| t.as_str()) {
                         println!("✓ Connected with filters: {:?}", v.get("filters"));
                     }
                 }
@@ -171,7 +171,7 @@ async fn search(
     json: bool,
 ) -> anyhow::Result<()> {
     let client = Client::new();
-    let mut url = format!("{}/search", server);
+    let url = format!("{}/search", server);
 
     let mut params = vec![];
     if let Some(ref q) = query {
